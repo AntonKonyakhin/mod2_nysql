@@ -217,9 +217,37 @@ mysql> select * from orders where price>300;
 - аттрибуты пользователя:
    - Фамилия "Pretty"
    - Имя "James"
-- Предоставьте привелегии пользователю test на операции SELECT базы test_db.
+   
+```
+create user 'test'@'localhost' \
+identified with mysql_native_password by 'test-pass' \
+WITH MAX_QUERIES_PER_HOUR 100 \
+password expire interval 180 day \
+failed_login_attempts 3 \
+Attribute '{"fname":"Pretty", "lname":"James"}';
 
+
+```
+- Предоставьте привелегии пользователю test на операции SELECT базы test_db.
+```
+mysql> grant select on test_db.* to 'test'@'localhost';
+Query OK, 0 rows affected, 1 warning (0.07 sec)
+```
 Используя таблицу INFORMATION_SCHEMA.USER_ATTRIBUTES получите данные по пользователю test и приведите в ответе к задаче.
+
+```
+mysql> select * from INFORMATION_SCHEMA.USER_ATTRIBUTES where user=test;
+ERROR 1054 (42S22): Unknown column 'test' in 'where clause'
+mysql> select * from INFORMATION_SCHEMA.USER_ATTRIBUTES where user='test';
++------+-----------+---------------------------------------+
+| USER | HOST      | ATTRIBUTE                             |
++------+-----------+---------------------------------------+
+| test | localhost | {"fname": "Pretty", "lname": "James"} |
++------+-----------+---------------------------------------+
+1 row in set (0.00 sec)
+
+
+```
 
 
 
