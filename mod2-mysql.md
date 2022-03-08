@@ -249,5 +249,16 @@ mysql> select * from INFORMATION_SCHEMA.USER_ATTRIBUTES where user='test';
 
 ```
 
+```
+mysql> show grants for 'test'@'localhost';
++---------------------------------------------------+
+| Grants for test@localhost                         |
++---------------------------------------------------+
+| GRANT USAGE ON *.* TO `test`@`localhost`          |
+| GRANT SELECT ON `test_db`.* TO `test`@`localhost` |
++---------------------------------------------------+
+2 rows in set (0.00 sec)
+
+```
 
 
