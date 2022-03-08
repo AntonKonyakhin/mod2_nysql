@@ -2,7 +2,7 @@
 Используя docker поднимите инстанс MySQL (версию 8). Данные БД сохраните в volume.
 
 ```
-docker pull mysql:8.0.28-oracle
+root@ubuntukurs:/opt# docker pull mysql:8.0.28
 ```
 
 далее запускаеи с подключенным volume для хранения БД
