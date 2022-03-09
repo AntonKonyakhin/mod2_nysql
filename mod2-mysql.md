@@ -261,4 +261,219 @@ mysql> show grants for 'test'@'localhost';
 
 ```
 
+### Задача 3  
+Установите профилирование SET profiling = 1. Изучите вывод профилирования команд SHOW PROFILES;.
+```
+mysql> show profiles;
++----------+------------+--------------+
+| Query_ID | Duration   | Query        |
++----------+------------+--------------+
+|        1 | 0.00019575 | .            |
+|        2 | 0.00072350 | show engines |
++----------+------------+--------------+
+2 rows in set, 1 warning (0.00 sec)
 
+```
+
+Исследуйте, какой engine используется в таблице БД test_db и приведите в ответе.
+
+```
+mysql> show table status\G;
+*************************** 1. row ***************************
+           Name: orders
+         Engine: InnoDB
+        Version: 10
+     Row_format: Dynamic
+           Rows: 5
+ Avg_row_length: 3276
+    Data_length: 16384
+Max_data_length: 0
+   Index_length: 0
+      Data_free: 0
+ Auto_increment: 6
+    Create_time: 2022-03-09 20:21:17
+    Update_time: 2022-03-09 20:21:17
+     Check_time: NULL
+      Collation: utf8mb4_0900_ai_ci
+       Checksum: NULL
+ Create_options: 
+        Comment: 
+1 row in set (0.00 sec)
+
+```
+
+Измените engine и приведите время выполнения и запрос на изменения из профайлера в ответе:
+
+на MyISAM
+на InnoDB
+
+
+поменял на MyISAM 
+```
+mysql> alter table orders engine=myisam;
+Query OK, 5 rows affected (0.03 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> show table status\G;
+*************************** 1. row ***************************
+           Name: orders
+         Engine: MyISAM
+        Version: 10
+     Row_format: Dynamic
+           Rows: 5
+ Avg_row_length: 3276
+    Data_length: 16384
+Max_data_length: 0
+   Index_length: 0
+      Data_free: 0
+ Auto_increment: 6
+    Create_time: 2022-03-09 21:12:32
+    Update_time: 2022-03-09 20:21:17
+     Check_time: NULL
+      Collation: utf8mb4_0900_ai_ci
+       Checksum: NULL
+ Create_options: 
+        Comment: 
+1 row in set (0.00 sec)
+
+ERROR: 
+No query specified
+
+```
+
+время, которое заняло:  
+
+8 | 0.02959525 | alter table orders engine=myisam 
+
+```
+mysql> show profiles;
++----------+------------+----------------------------------+
+| Query_ID | Duration   | Query                            |
++----------+------------+----------------------------------+
+|        1 | 0.00019575 | .                                |
+|        2 | 0.00072350 | show engines                     |
+|        3 | 0.00083750 | SELECT DATABASE()                |
+|        4 | 0.00441250 | show databases                   |
+|        5 | 0.00260100 | show tables                      |
+|        6 | 0.00502550 | show table status                |
+|        7 | 0.00177650 | show table status                |
+|        8 | 0.02959525 | alter table orders engine=myisam |
+|        9 | 0.00281800 | show table status                |
++----------+------------+----------------------------------+
+9 rows in set, 1 warning (0.01 sec)
+
+```
+
+поменял на InnoDB
+
+```
+mysql> alter table orders engine=innodb;
+Query OK, 5 rows affected (0.05 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+```
+
+время, которое заняло  
+
+|       10 | 0.04688550 | alter table orders engine=innodb
+
+```
+mysql> show profiles;
++----------+------------+----------------------------------+
+| Query_ID | Duration   | Query                            |
++----------+------------+----------------------------------+
+|        1 | 0.00019575 | .                                |
+|        2 | 0.00072350 | show engines                     |
+|        3 | 0.00083750 | SELECT DATABASE()                |
+|        4 | 0.00441250 | show databases                   |
+|        5 | 0.00260100 | show tables                      |
+|        6 | 0.00502550 | show table status                |
+|        7 | 0.00177650 | show table status                |
+|        8 | 0.02959525 | alter table orders engine=myisam |
+|        9 | 0.00281800 | show table status                |
+|       10 | 0.04688550 | alter table orders engine=innodb |
++----------+------------+----------------------------------+
+
+```
+
+### Задача 4
+Изучите файл my.cnf в директории /etc/mysql.
+
+Измените его согласно ТЗ (движок InnoDB):
+
+- Скорость IO важнее сохранности данных
+innodb_flush_log_at_trx_commit = 2
+
+- Нужна компрессия таблиц для экономии места на диске
+innodb_file_per_table =1
+
+- Размер буффера с незакомиченными транзакциями 1 Мб
+innodb_log_buffer_size=1M
+
+- Буффер кеширования 30% от ОЗУ
+innodb_buffer_pool_size = 1200M
+
+- Размер файла логов операций 100 Мб
+innodb_log_file_size = 100M
+
+Приведите в ответе измененный файл my.cnf.
+```
+root@anton-v-m:/opt/mysqldb_1# vim my.cnf
+
+# Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+
+#
+# The MySQL  Server configuration file.
+#
+# For explanations see
+# http://dev.mysql.com/doc/mysql/en/server-system-variables.html
+
+[mysqld]
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+
+#
+# The MySQL  Server configuration file.
+#
+# For explanations see
+# http://dev.mysql.com/doc/mysql/en/server-system-variables.html
+
+[mysqld]
+pid-file        = /var/run/mysqld/mysqld.pid
+socket          = /var/run/mysqld/mysqld.sock
+datadir         = /var/lib/mysql
+secure-file-priv= NULL
+
+#Скорость IO важнее сохранности данных
+innodb_flush_log_at_trx_commit = 2
+
+#Нужна компрессия таблиц для экономии места на диске
+innodb_file_per_table =1
+
+#Размер буффера с незакомиченными транзакциями 1 Мб
+innodb_log_buffer_size=1M
+
+#Буффер кеширования 30% от ОЗУ (RAM = 4 GB)
+innodb_buffer_pool_size = 1200M
+
+#Размер файла логов операций 100 Мб
+innodb_log_file_size = 100M
+
+
+```
